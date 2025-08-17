@@ -1,4 +1,3 @@
-# bulk_status_api.py
 from fastapi import FastAPI, Form, Request
 from fastapi.responses import JSONResponse
 import httpx
@@ -37,7 +36,7 @@ async def check_status(url: str):
 async def check(request: Request, url: str = Form(None)):
     input_raw = []
 
-    # JSON input: { "urls": [...] }
+    # ✅ JSON input: { "urls": ["google.com", "example.com"] }
     try:
         body = await request.json()
         if "urls" in body and isinstance(body["urls"], list):
@@ -45,9 +44,13 @@ async def check(request: Request, url: str = Form(None)):
     except Exception:
         pass
 
-    # Form input: url="domain1.com\ndomain2.com"
-    if url:
-        input_raw = url.splitlines()
+    # ✅ Form input: url="google.com\ngithub.com" OR "google.com, github.com"
+    if url and not input_raw:
+        # split by newline or comma
+        parts = []
+        for line in url.splitlines():
+            parts.extend([p.strip() for p in line.split(",") if p.strip()])
+        input_raw = parts
 
     output = []
 
